@@ -45,7 +45,43 @@ def successors(board):
 
 #def is_goal(board):
 
-#def heuristic(state):
+def eval(board,color,n,k):
+	print board,color
+	row_count=[]
+	col_count=[]
+	diag_count=[]
+	for row in range(0,n):
+		row_count.append(count_on_row(board,row,color))
+		for col in range(0,n):
+			count_on_diag(board,row,col,n,k,color)
+	# col_count+=count_on_col(board,col,color)
+	for col in range(0,n):
+		col_count.append(count_on_col(board, col, color,col_count))
+
+def count_on_diag(board, row, col,n,k,color):
+	# print board
+	for r in range(0,n):
+		for c in range(0,n):
+			left_upper_diagonal = 0
+			left_bottom_diagonal = 0
+			right_upper_diagonal = 0
+			right_bottom_diagonal = 0
+			for i in range(1,k):
+				if(row-i>=0 and col-i>=0):
+
+					left_upper_diagonal+=(board[row-i][col-i].count(color))
+					print left_upper_diagonal,r,c
+				# if(row+i<k and col+i<k):
+				# 	right_bottom_diagonal=(board[row+i][col+i].count(color))
+				# if (row - i >= 0 and col + i <k ):
+				# 	right_upper_diagonal=(board[row-i][col+i].count(color))
+				# if (row + i <k and col - i >= 0):
+				# 	left_bottom_diagonal=(board[row+i][col-i].count(color))
+				# i += 1
+	# print left_upper_diagonal,right_bottom_diagonal,right_upper_diagonal,left_bottom_diagonal
+
+
+# return sum(board[row])
 
 # evaluation function
 def eval(board,color,n,k):
