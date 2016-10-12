@@ -13,7 +13,8 @@ PS: keep updating this.
 '''
 from copy import deepcopy
 import sys
-
+from itertools import groupby
+from itertools import groupby
 n = int(sys.argv[1])
 k = int(sys.argv[2])
 node = sys.argv[3]
@@ -28,11 +29,6 @@ def determine_color(node):
 #converts the string input to a board (list of list) given n(line 2)
 def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
-
-
-
-
-
 
 
 #def count_on_diagonals(board, row, col):
