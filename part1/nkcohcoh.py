@@ -13,6 +13,7 @@ PS: keep updating this.
 '''
 from copy import deepcopy
 import sys
+from itertools import groupby
 
 n = int(sys.argv[1])
 k = int(sys.argv[2])
@@ -31,11 +32,11 @@ def string_to_board(node, n):
 
 #function incomplete
 def count_on_row(board, row, color):
-	return sum(board[row])
+	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
 
 #function incomplete
 def count_on_col(board,col):
-	return sum([row[col] for row in board])
+	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
 #def count_on_diagonals(board, row, col):
 
