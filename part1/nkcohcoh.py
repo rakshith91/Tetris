@@ -11,10 +11,9 @@ existing successors
 PS: keep updating this.
 
 '''
-
-
-
+from copy import deepcopy
 import sys
+
 n = int(sys.argv[1])
 k = int(sys.argv[2])
 node = sys.argv[3]
@@ -28,11 +27,12 @@ def determine_color(node):
 
 #converts the string input to a board (list of list) given n(line 2)
 def string_to_board(node, n):
-	return [list(node[i:i+n]) for i in range(0, len(node), n)]		
+	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
 #function incomplete
 def count_on_row(board, row, color):
 	return sum(board[row])
+
 #function incomplete
 def count_on_col(board,col):
 	return sum([row[col] for row in board])
@@ -42,6 +42,7 @@ def count_on_col(board,col):
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
 	return  board[0:row] + [board[row][0:col] + [color,] + board[row][col+1:]] + board[row+1:]
+
 #successors for a given input. we should avoid symmetrical boards. so , we should write a function
 #to check symmetry
 def successors(board):	
@@ -51,10 +52,16 @@ def successors(board):
 
 #def heuristic(state):
 
-def check_symmetry(board_1,board_2):
-	print "hello"
+# checks the symmetry
+def check_symmetry(a,n):
+	b = deepcopy(a)
+	for col in range(0,n):
+		for row in range(n-1,-1,-1):
+			for row1 in range(0,n):
+				for col1 in range(0,n):
+					b[row1][col1]=a[col][row]
+	print b
 
 #def solve(state):
 color = determine_color(node)
-check_symmetry([1,0],[0,])
-#print successors(string_to_board(node,n))
+print successors(string_to_board(node,n))
