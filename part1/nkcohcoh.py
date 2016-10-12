@@ -11,10 +11,9 @@ existing successors
 PS: keep updating this.
 
 '''
-
-
-from itertools import groupby
+from copy import deepcopy
 import sys
+
 n = int(sys.argv[1])
 k = int(sys.argv[2])
 node = sys.argv[3]
@@ -28,18 +27,17 @@ def determine_color(node):
 
 #converts the string input to a board (list of list) given n(line 2)
 def string_to_board(node, n):
-	return [list(node[i:i+n]) for i in range(0, len(node), n)]		
+	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
-#counts continous values of whites and blacs and dots in all row
-def count_on_row(board):
-	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
+#function incomplete
+def count_on_row(board, row, color):
+	return sum(board[row])
 
-#counts continous values of whites and blacs and dots in all cols
-def count_on_col(board):
-	 return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
+#function incomplete
+def count_on_col(board,col):
+	return sum([row[col] for row in board])
 
-#counts continous values of whites , blacks and dots in all diagonals
-#def count_on_diagonals(board):
+#def count_on_diagonals(board, row, col):
 
 
 #idea for this function taken from assignment 0
@@ -48,8 +46,6 @@ def add_marble(board, row, col, color):
 
 #successors for a given input. we should avoid symmetrical boards. so , we should write a function
 #to check symmetry
-
-
 def successors(board):	
 	return [add_marble(board, row, col, color) for row in range(0,n) for col in range(0,n) if board[row][col]=='.' ]
 
@@ -57,4 +53,16 @@ def successors(board):
 
 #def heuristic(state):
 
+# checks the symmetry
+def check_symmetry(a,n):
+	b = deepcopy(a)
+	for col in range(0,n):
+		for row in range(n-1,-1,-1):
+			for row1 in range(0,n):
+				for col1 in range(0,n):
+					b[row1][col1]=a[col][row]
+	print b
+
 #def solve(state):
+color = determine_color(node)
+print successors(string_to_board(node,n))
