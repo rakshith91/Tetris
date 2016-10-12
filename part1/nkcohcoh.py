@@ -41,6 +41,7 @@ def count_on_col(board):
 #counts continous values of whites , blacks and dots in all diagonals
 #def count_on_diagonals(board):
 
+
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
 	return  board[0:row] + [board[row][0:col] + [color,] + board[row][col+1:]] + board[row+1:]
