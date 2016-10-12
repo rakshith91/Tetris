@@ -9,7 +9,6 @@ existing successors
 4)write minimax / a*
 
 PS: keep updating this.
-
 '''
 from copy import deepcopy
 import sys
@@ -31,11 +30,11 @@ def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
 #function incomplete
-def count_on_row(board, row, color):
+def count_on_row(board):
 	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
 
 #function incomplete
-def count_on_col(board,col):
+def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
 #def count_on_diagonals(board, row, col):
@@ -54,39 +53,28 @@ def successors(board):
 
 def eval(board,color,n,k):
 	print board,color
-	row_count=[]
-	col_count=[]
-	diag_count=[]
+	print count_on_row(board)
+	print count_on_col(board)
+	count_on_diag(board,n)
+	# 	row_count.append(count_on_row(board,row,color))
+	# 	for col in range(0,n):
+	# 		count_on_diag(board,row,col,n,k,color)
+	# # col_count+=count_on_col(board,col,color)
+	# for col in range(0,n):
+	# 	col_count.append(count_on_col(board, col, color,col_count))
+
+# https://d1b10bmlvqabco.cloudfront.net/attach/irnmu9v26th48r/irnn3xcxmhl79t/it989yrs3ja8/nqueens.py
+def count_on_diag(board,N):
+	diagonal1={}
+	diagonal2={}
 	for row in range(0,n):
-		row_count.append(count_on_row(board,row,color))
 		for col in range(0,n):
-			count_on_diag(board,row,col,n,k,color)
-	# col_count+=count_on_col(board,col,color)
-	for col in range(0,n):
-		col_count.append(count_on_col(board, col, color,col_count))
-
-def count_on_diag(board, row, col,n,k,color):
-	# print board
-	for r in range(0,n):
-		for c in range(0,n):
-			left_upper_diagonal = 0
-			left_bottom_diagonal = 0
-			right_upper_diagonal = 0
-			right_bottom_diagonal = 0
-			for i in range(1,k):
-				if(row-i>=0 and col-i>=0):
-
-					left_upper_diagonal+=(board[row-i][col-i].count(color))
-					print left_upper_diagonal,r,c
-				# if(row+i<k and col+i<k):
-				# 	right_bottom_diagonal=(board[row+i][col+i].count(color))
-				# if (row - i >= 0 and col + i <k ):
-				# 	right_upper_diagonal=(board[row-i][col+i].count(color))
-				# if (row + i <k and col - i >= 0):
-				# 	left_bottom_diagonal=(board[row+i][col-i].count(color))
-				# i += 1
-	# print left_upper_diagonal,right_bottom_diagonal,right_upper_diagonal,left_bottom_diagonal
-
+			dir=1
+			diagonal1[(row,col)]=[board[r][c] for (r,c) in [(row - col * dir + c * dir, c) for c in range(0, N)] if r >= 0 and r < N]
+			dir = -1
+			diagonal2[(row, col)] =[board[r][c] for (r,c) in [(row - col * dir + c * dir, c) for c in range(0, N)] if r >= 0 and r < N]
+	print diagonal1
+	print diagonal2
 
 # return sum(board[row])
 
@@ -102,6 +90,7 @@ def check_symmetry(a,n):
 
 #def solve(state):
 color = determine_color(node)
-print successors(string_to_board(node,n))
-
+successor= successors(string_to_board(node,n))
+# for i in successor:
+eval(successor[0],color,n,k)
 
