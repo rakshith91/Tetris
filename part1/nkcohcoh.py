@@ -30,10 +30,20 @@ def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
 def count_on_row(board):
-	a= [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
+	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
+	# count = 0
+	# board=[['w', 'w', 'w'], ['w', 'w', '.'], ['.', '.', 'b']]
+	# for row in board:
+	# 	for i,g in groupby(row):
+	# 		a= (i,len(list(g)))
+	# 		print a
+	# 		if a[0]==color:
+	# 			count+=a[1]
+	# print count
+
 
 def count_on_col(board):
-	a= [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
+	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
 def count_on_diag(board,n,k,color):
 	count_list = []
@@ -71,17 +81,48 @@ def add_marble(board, row, col, color):
 def successors(board):	
 	return [add_marble(board, row, col, color) for row in range(0,n) for col in range(0,n) if board[row][col]=='.' ]
 
-#def is_goal(board):
+def is_goal(board,k):
+	#loss by column
+	result= [c[0] for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']
+	if result:
+		print result[0][0],"lost by column"
+	result= [c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']
+	if result:
+		print result[0][0], "lost by row"
+	
+
+
+	#loss by diagonal
+
 
 def eval(board,color,n,k):
 	print board,color
-	count_on_row(board)
+	count_on_row(board,color)
 	count_on_col(board)
 	print count_on_diag(board,n,k,color)
 
-#def solve(state):
+def solve(board,color):
+    fringe=[board]
+    while len(fringe)>0:
+        valid_state=fringe.pop()
+        for s in successors(valid_state,color):
+			for clr in range(0,1):
+				if color!=clr:
+					solve(s,clr)
+
+def color_num(color):
+	if color=='w':
+		return 1
+	elif color=='b':
+		return 0
+
 color = determine_color(node)
-successor= successors(string_to_board(node,n))
-# for i in successor:
-eval(successor[0],color,n,k)
+# color = color_num(color)
+print color
+board = string_to_board(node, n)
+is_goal(board,k)
+# print board
+# fringe = []
+# Solution = solve(board, color)
+
 
