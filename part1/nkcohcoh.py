@@ -57,6 +57,8 @@ def add_marble(board, row, col, color):
 def successors(board):	
 	return [add_marble(board, row, col, color) for row in range(0,n) for col in range(0,n) if board[row][col]=='.' ]
 
+
+
 def is_goal(board,k):
 	#loss by column
 	result= list(set([c[0] for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']))
@@ -88,16 +90,54 @@ def color_num(color):
 	elif color=='b':
 		return 0
 
+def possible_row(board):
+	return [i for i in board]
+
+def possible_col(board):
+	return [col for col in zip(*board)] #Rakshit please explain me how zip works and what does *board mean
+
+
 #incomplete function
 def eval(data_structure,n,k):
 	if data_structure[1]=='MAX':
 		print data_structure[0]
 		#do the same thing what is in down
 	elif data_structure[1]=='MIN':
+
 		print data_structure[0]
+
+		pos_row = possible_row(board)
+		min_loss_row = len([x for x in pos_row if 'w' not in x])
+		max_loss_row = len([x for x in pos_row if 'b' not in x])
+		print max_loss_row, min_loss_row
+		print "min_loss_rows",[x for x in pos_row if 'w' not in x]
+		print "max_loss_rows", [x for x in pos_row if 'b' not in x]
+
+		pos_col = possible_col(board)
+		min_loss_col= len([x for x in pos_col if 'w' not in x])
+		max_loss_col= len([x for x in pos_col if 'b' not in x])
+		print max_loss_col,min_loss_col
+		print "min_loss_col", [x for x in pos_col if 'w' not in x]
+		print "max loss col", [x for x in pos_col if 'b' not in x]
+
 		all_diagonals,b=count_on_diag(data_structure[0],n)
 		possible_diagonals = [i for i in all_diagonals if len(i)>=k]
 		print possible_diagonals
+		loss_diag = len([x for x in possible_diagonals if 'w' not in x])
+		loss_diag,t = count_on_diag(board,n)
+		loss_diagonals=[]
+		for m in loss_diag:
+			if len(m)==k:
+				loss_diagonals.append(m)
+		min_loss_diag=[x for x in loss_diagonals if 'w' not in x]
+		max_loss_diag=len([x for x in loss_diagonals if 'b' not in x])
+		print max_loss_diag,min_loss_diag
+
+		# print "man loss diag", list(set([x for x in possible_diagonals if 'b' not in x]))
+
+		# e=(max_loss_row+max_loss_col+max_loss_diag)-(min_loss_row+min_loss_col+min_loss_diag)
+		# print min_loss_row+min_loss_col+min_loss_diag
+
 		# find the diagonals with only w and . (max_loss)
 		# find the diagonals with only b and . (min loss)
 		# e=max loss - min loss
@@ -108,7 +148,7 @@ color = determine_color(node)
 board = string_to_board(node, n)
 data_structure = [board,'MIN']
 eval(data_structure,n,k)
-
+is_goal(board,k)
 '''
 this is how i think algo should be:
 minimax()
