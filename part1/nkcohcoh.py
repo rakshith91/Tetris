@@ -99,7 +99,7 @@ def color_num(color):
 	elif color=='b':
 		return 0
 
-def assign_score(board, color):
+def assign_score(board, color=color):
 	if is_goal(board, k)[0] and is_goal(board, k)[1]!=color:
 		return 1
 	elif is_goal(board, k)[0] and is_goal(board, k)[1]==color:
