@@ -6,13 +6,12 @@ n = int(sys.argv[1])
 k = int(sys.argv[2])
 node = sys.argv[3]
 time_limit = sys.argv[4]
-
 #determine which color takes the move. argument node is a string input from sys(refer line 4)
 def determine_color(node):
 	whites = node.count('w')
 	blacks = node.count('b')
 	return 'w' if whites==blacks else 'b' if whites>blacks else "error"
-
+color = determine_color(node)
 #converts the string input to a board (list of list) given n(line 2)
 def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
@@ -23,7 +22,8 @@ def count_on_row(board):
 def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
-
+board = string_to_board(node, n)
+	
 # David Crandal's nqueens code
 def generate_diag(board,n):
 	print "board",board
@@ -49,6 +49,10 @@ def generate_diag(board,n):
 	d = diagonals1 + diagonals2
 	return d
 
+def count_on_diag(d= generate_diag(board, n)):
+	d= [i for i in d if len(i)>=k]
+	return [[(i,len(list(g))) for i,g in groupby(row)] for row in d]
+print count_on_diag()
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
 	return  board[0:row] + [board[row][0:col] + [color,] + board[row][col+1:]] + board[row+1:]
@@ -62,44 +66,57 @@ def successors(board):
 
 def is_goal(board,k):
 	#loss by column
-	result= list(set([c[0] for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']))
+	result= [c for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']
+	print result,"resu"
 	if result:
-		print result[0][0],"lost by column"
-		return 1
-	result= list(set([c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']))
+		print c[0],"lost"
+		return (True, c[0])
+	result= [c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']
 	if result:
-		print result[0][0], "lost by row"
-		return 1
-	result = list(set([r[0] for r in count_on_diag(board, n) if r[1]==k and r[0]!='.']))
+		print result,"row"
+		return (True, c[0])
+	
+	result = [c for r in count_on_diag() for c in r if c[1]==k and c[0]!='.']
 	if result:
-		print result[0],"lost by diagonal"
-		return 1
-	return 0
+		print result,"di"
+		return (True, c[0])
+	return False
+
 
 def solve(board,color):
-    fringe=[board]
-    while len(fringe)>0:
-        valid_state=fringe.pop()
-        for s in successors(valid_state,color):
-			for clr in range(0,1):
-				if color!=clr:
-					solve(s,clr)
+	fringe=[board]
+	while fringe:
+		for s in successors(fringe.pop()):
+			if is_goal(s,k):
+				return s
+			fringe.append(s)
+	return False
 
+print solve(board, determine_color(node))
 def color_num(color):
 	if color=='w':
 		return 1
 	elif color=='b':
 		return 0
 
-def possible_row(board):
-	return [i for i in board]
+def assign_score(board, color):
+	if is_goal(board, k)[0] and is_goal(board, k)[1]!=color:
+		return 1
+	elif is_goal(board, k)[0] and is_goal(board, k)[1]==color:
+		return -1
+	elif not is_goal(board, k)[0] :
+		return 0
 
-def possible_col(board):
-	return [col for col in zip(*board)] #Rakshit please explain me how zip works and what does *board mean
+print assign_score(board, color)
+#def possible_row(board):
+#	return [i for i in board]
+#
+#def possible_col(board):
+#	return [col for col in zip(*board)] #Rakshit please explain me how zip works and what does *board mean
 
 
 #incomplete function
-def eval(data_structure,n,k):
+def heuristic(data_structure,n,k):
 	if data_structure[1]=='MAX':
 		print data_structure[0]
 		#do the same thing what is in down
@@ -135,72 +152,4 @@ def eval(data_structure,n,k):
 		# # e=max loss - min loss
 		print e
 
-
-color = determine_color(node)
-board = string_to_board(node, n)
-data_structure = [board,'MIN']
-eval(data_structure,n,k)
-
-#Algorithm for Minimax - wikipedia
-
-
-# function minimax(node, depth, maximizingPlayer)
-#      if depth = 0 or node is a terminal node
-#          return the heuristic value of node
-#
-#      if maximizingPlayer
-#          bestValue := −∞
-#          for each child of node
-#              v := minimax(child, depth − 1, FALSE)
-#              bestValue := max(bestValue, v)
-#          return bestValue
-#
-#      else    (* minimizing player *)
-#          bestValue := +∞
-#          for each child of node
-#              v := minimax(child, depth − 1, TRUE)
-#              bestValue := min(bestValue, v)
-#          return bestValue
-
-
-# is_goal(board,k)
-# count_on_diag(board,n)
-#
-# this is how i think algo should be:
-def minimax(data_structure,n,k):
-
-	#identify MIN and MAX Players
-	MAX = determine_color(board)
-	if MAX=='b':
-		MIN='w'
-	else:
-		MIN='b'
-
-	while fringe!=0:
-		if is_goal(board,k):	#this function will return the data structure ie. [[board],e,MAX/MIN]
-			print MAX/MIN lost
-			return 0
-# 	else:
-# 		s=successor(board,MAX)
-# 		for each S:
-# 			calculate eval(s) and append on the board
-# 			if MAX:
-# 				choose minimum out of (e)
-# 				successor(board,MIN)
-# 			elif MIN:
-# 				choose maximum out of (e)
-# 				successor(board,MAX)
-#
-# #
-# def minimax_decision(s):
-# 	#Return action leading to state SSUCC(S) that maximizes MIN_Value(S)
-#
-# def maxvalue(s):
-# 	'''If Terminal ?(s) return result(s)
-# 	else return max of s' which belongs to successor of s min_value(s')
-# 	'''
-#
-# def minvalue(s):
-# 	if terminal ? (s) return result(s)
-# 	else return min of s' max_value(s')
 
