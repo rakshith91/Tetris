@@ -29,16 +29,38 @@ def determine_color(node):
 def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
-#function incomplete
 def count_on_row(board):
-	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
+	a= [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
 
-#function incomplete
 def count_on_col(board):
-	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
+	a= [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
-#def count_on_diagonals(board, row, col):
-
+def count_on_diag(board,n,k,color):
+	count_list = []
+	for r in range(0,n):
+		for c in range(0,n):
+			i=1
+			count=0
+			while board[r][c]==color and i<k:
+				#right bottom diagonal
+				if r+i<n and c+i<n and board[r+i][c+i]==color:
+					count+=1
+					print "1st",r,c,i,board[r][c],board[r+i][c+i]
+				#left top diagonal
+				if r-i>=0 and c-i>=0 and board[r-i][c-i]==color:
+					count+=1
+					print "2nd",r,c,i,board[r][c],board[r-i][c-i]
+				#right top diagonal
+				if r-i>=0 and c+i<n and board[r-i][c+i]==color:
+					count+=1
+					print "3rd",r,c,board[r-i][c+i]
+				#left bottom diagonal
+				if r+i<n and c-i>=0 and board[r+i][c-i]==color:
+					count+=1
+					print "4th",r,c,board[r+i][c-i]
+				i+=1
+			count_list.append(count)
+	return sum(count_list)
 
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
@@ -53,40 +75,9 @@ def successors(board):
 
 def eval(board,color,n,k):
 	print board,color
-	print count_on_row(board)
-	print count_on_col(board)
-	count_on_diag(board,n)
-	# 	row_count.append(count_on_row(board,row,color))
-	# 	for col in range(0,n):
-	# 		count_on_diag(board,row,col,n,k,color)
-	# # col_count+=count_on_col(board,col,color)
-	# for col in range(0,n):
-	# 	col_count.append(count_on_col(board, col, color,col_count))
-
-# https://d1b10bmlvqabco.cloudfront.net/attach/irnmu9v26th48r/irnn3xcxmhl79t/it989yrs3ja8/nqueens.py
-def count_on_diag(board,N):
-	diagonal1={}
-	diagonal2={}
-	for row in range(0,n):
-		for col in range(0,n):
-			dir=1
-			diagonal1[(row,col)]=[board[r][c] for (r,c) in [(row - col * dir + c * dir, c) for c in range(0, N)] if r >= 0 and r < N]
-			dir = -1
-			diagonal2[(row, col)] =[board[r][c] for (r,c) in [(row - col * dir + c * dir, c) for c in range(0, N)] if r >= 0 and r < N]
-	print diagonal1
-	print diagonal2
-
-# return sum(board[row])
-
-# checks the symmetry
-def check_symmetry(a,n):
-	b = deepcopy(a)
-	for col in range(0,n):
-		for row in range(n-1,-1,-1):
-			for row1 in range(0,n):
-				for col1 in range(0,n):
-					b[row1][col1]=a[col][row]
-	print b
+	count_on_row(board)
+	count_on_col(board)
+	print count_on_diag(board,n,k,color)
 
 #def solve(state):
 color = determine_color(node)
