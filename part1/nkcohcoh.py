@@ -31,46 +31,22 @@ def string_to_board(node, n):
 
 def count_on_row(board):
 	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
-	# count = 0
-	# board=[['w', 'w', 'w'], ['w', 'w', '.'], ['.', '.', 'b']]
-	# for row in board:
-	# 	for i,g in groupby(row):
-	# 		a= (i,len(list(g)))
-	# 		print a
-	# 		if a[0]==color:
-	# 			count+=a[1]
-	# print count
-
 
 def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
-def count_on_diag(board,n,k,color):
-	count_list = []
-	for r in range(0,n):
-		for c in range(0,n):
-			i=1
-			count=0
-			while board[r][c]==color and i<k:
-				#right bottom diagonal
-				if r+i<n and c+i<n and board[r+i][c+i]==color:
-					count+=1
-					print "1st",r,c,i,board[r][c],board[r+i][c+i]
-				#left top diagonal
-				if r-i>=0 and c-i>=0 and board[r-i][c-i]==color:
-					count+=1
-					print "2nd",r,c,i,board[r][c],board[r-i][c-i]
-				#right top diagonal
-				if r-i>=0 and c+i<n and board[r-i][c+i]==color:
-					count+=1
-					print "3rd",r,c,board[r-i][c+i]
-				#left bottom diagonal
-				if r+i<n and c-i>=0 and board[r+i][c-i]==color:
-					count+=1
-					print "4th",r,c,board[r+i][c-i]
-				i+=1
-			count_list.append(count)
-	return sum(count_list)
+def count_on_diag(board,n):
+	print "board",board
+	diagonals1=[]
+	diagonals2=[]
+	for row in range(0,n):
+		for col in range(0,n):
+			dir=1
+			diagonals1.append( [ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
+			dir=-1
+			diagonals2.append([ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
+	d=diagonals1+diagonals2
+	return [(key, len(list(group))) for i in d for key,group in groupby(i)]
 
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
@@ -83,17 +59,18 @@ def successors(board):
 
 def is_goal(board,k):
 	#loss by column
-	result= [c[0] for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']
+	result= list(set([c[0] for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']))
 	if result:
 		print result[0][0],"lost by column"
-	result= [c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']
+		return 1
+	result= list(set([c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']))
 	if result:
 		print result[0][0], "lost by row"
-	
-
-
-	#loss by diagonal
-
+		return 1
+	result = list(set([r[0] for r in count_on_diag(board, n) if r[1]==k and r[0]!='.']))
+	if result:
+		print result[0],"lost by diagonal"
+		return 1
 
 def eval(board,color,n,k):
 	print board,color
@@ -120,7 +97,7 @@ color = determine_color(node)
 # color = color_num(color)
 print color
 board = string_to_board(node, n)
-is_goal(board,k)
+is_goal(board,n)
 # print board
 # fringe = []
 # Solution = solve(board, color)
