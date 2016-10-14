@@ -1,15 +1,3 @@
-'''
-1)write a function to check symmetry. we should not generate successors which are symmetrical to 
-existing successors
-
-2)write a function to check no of continuous w's , b's and .'s in a row, col and diagonal(assigned to Rakshith)
-
-3) develop ( and code) a heuristic. 
-
-4)write minimax / a*
-
-PS: keep updating this.
-'''
 from copy import deepcopy
 import sys
 from itertools import groupby
@@ -35,18 +23,31 @@ def count_on_row(board):
 def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
-def count_on_diag(board,n):
+
+# David Crandal's nqueens code
+def generate_diag(board,n):
 	print "board",board
 	diagonals1=[]
 	diagonals2=[]
 	for row in range(0,n):
 		for col in range(0,n):
-			dir=1
-			diagonals1.append( [ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
-			dir=-1
-			diagonals2.append([ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
-	d=diagonals1+diagonals2
-	return d,[(key, len(list(group))) for i in d for key,group in groupby(i)]
+			if row!=0 and col==0:
+				dir=1
+				diagonals1.append( [ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
+				# print "forward diagonals \ ",diagonals1
+			if row==0:
+				dir = 1
+				diagonals1.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if r >= 0 and r < n])
+				# print "forward diagonals \ "
+				dir=-1
+				diagonals2.append([ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
+				# print "backward diagonals / ",diagonals2
+			elif row!=0 and col==n-1:
+				dir = -1
+				diagonals2.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if r >= 0 and r < n])
+				# print "backward diagonals / " , diagonals2
+	d = diagonals1 + diagonals2
+	return d
 
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
@@ -104,7 +105,7 @@ def eval(data_structure,n,k):
 		#do the same thing what is in down
 	elif data_structure[1]=='MIN':
 
-		print data_structure[0]
+		print "data structure is ",data_structure[0]
 
 		pos_row = possible_row(board)
 		min_loss_row = len([x for x in pos_row if 'w' not in x])
@@ -120,52 +121,86 @@ def eval(data_structure,n,k):
 		print "min_loss_col", [x for x in pos_col if 'w' not in x]
 		print "max loss col", [x for x in pos_col if 'b' not in x]
 
-		all_diagonals,b=count_on_diag(data_structure[0],n)
+		all_diagonals=generate_diag(data_structure[0],n)
+		print "all diag",all_diagonals
 		possible_diagonals = [i for i in all_diagonals if len(i)>=k]
-		print possible_diagonals
-		loss_diag = len([x for x in possible_diagonals if 'w' not in x])
-		loss_diag,t = count_on_diag(board,n)
-		loss_diagonals=[]
-		for m in loss_diag:
-			if len(m)==k:
-				loss_diagonals.append(m)
-		min_loss_diag=[x for x in loss_diagonals if 'w' not in x]
-		max_loss_diag=len([x for x in loss_diagonals if 'b' not in x])
+		print "possible diag",possible_diagonals
+		min_loss_diag=len([x for x in possible_diagonals if 'w' not in x])
+		max_loss_diag=len([x for x in possible_diagonals if 'b' not in x])
 		print max_loss_diag,min_loss_diag
 
-		# print "man loss diag", list(set([x for x in possible_diagonals if 'b' not in x]))
-
-		# e=(max_loss_row+max_loss_col+max_loss_diag)-(min_loss_row+min_loss_col+min_loss_diag)
-		# print min_loss_row+min_loss_col+min_loss_diag
-
-		# find the diagonals with only w and . (max_loss)
-		# find the diagonals with only b and . (min loss)
-		# e=max loss - min loss
-		# return e
+		e=(max_loss_row+max_loss_col+max_loss_diag)-(min_loss_row+min_loss_col+min_loss_diag)
+		# # find the diagonals with only w and . (max_loss)
+		# # find the diagonals with only b and . (min loss)
+		# # e=max loss - min loss
+		print e
 
 
 color = determine_color(node)
 board = string_to_board(node, n)
 data_structure = [board,'MIN']
 eval(data_structure,n,k)
-is_goal(board,k)
-'''
-this is how i think algo should be:
-minimax()
-	while fringe!=0
-	if is_goal(board):	#this function will return the data structure ie. [[board],e,MAX/MIN]
-		print MAX/MIN lost
-		return 0
-	else:
-		s=successor(board,MAX)
-		for each S:
-			calculate eval(s) and append on the board
-			if MAX:
-				choose minimum out of (e)
-				successor(board,MIN)
-			elif MIN:
-				choose maximum out of (e)
-				successor(board,MAX)
-'''
 
+#Algorithm for Minimax - wikipedia
+
+
+# function minimax(node, depth, maximizingPlayer)
+#      if depth = 0 or node is a terminal node
+#          return the heuristic value of node
+#
+#      if maximizingPlayer
+#          bestValue := −∞
+#          for each child of node
+#              v := minimax(child, depth − 1, FALSE)
+#              bestValue := max(bestValue, v)
+#          return bestValue
+#
+#      else    (* minimizing player *)
+#          bestValue := +∞
+#          for each child of node
+#              v := minimax(child, depth − 1, TRUE)
+#              bestValue := min(bestValue, v)
+#          return bestValue
+
+
+# is_goal(board,k)
+# count_on_diag(board,n)
+#
+# this is how i think algo should be:
+def minimax(data_structure,n,k):
+
+	#identify MIN and MAX Players
+	MAX = determine_color(board)
+	if MAX=='b':
+		MIN='w'
+	else:
+		MIN='b'
+
+	while fringe!=0:
+		if is_goal(board,k):	#this function will return the data structure ie. [[board],e,MAX/MIN]
+			print MAX/MIN lost
+			return 0
+# 	else:
+# 		s=successor(board,MAX)
+# 		for each S:
+# 			calculate eval(s) and append on the board
+# 			if MAX:
+# 				choose minimum out of (e)
+# 				successor(board,MIN)
+# 			elif MIN:
+# 				choose maximum out of (e)
+# 				successor(board,MAX)
+#
+# #
+# def minimax_decision(s):
+# 	#Return action leading to state SSUCC(S) that maximizes MIN_Value(S)
+#
+# def maxvalue(s):
+# 	'''If Terminal ?(s) return result(s)
+# 	else return max of s' which belongs to successor of s min_value(s')
+# 	'''
+#
+# def minvalue(s):
+# 	if terminal ? (s) return result(s)
+# 	else return min of s' max_value(s')
 
