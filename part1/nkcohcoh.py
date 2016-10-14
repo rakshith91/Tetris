@@ -46,7 +46,7 @@ def count_on_diag(board,n):
 			dir=-1
 			diagonals2.append([ board[r][c] for (r,c) in [ (row-col*dir+c*dir,c) for c in range(0,n) ] if r >= 0 and r < n ])
 	d=diagonals1+diagonals2
-	return [(key, len(list(group))) for i in d for key,group in groupby(i)]
+	return d,[(key, len(list(group))) for i in d for key,group in groupby(i)]
 
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
@@ -71,12 +71,7 @@ def is_goal(board,k):
 	if result:
 		print result[0],"lost by diagonal"
 		return 1
-
-def eval(board,color,n,k):
-	print board,color
-	count_on_row(board,color)
-	count_on_col(board)
-	print count_on_diag(board,n,k,color)
+	return 0
 
 def solve(board,color):
     fringe=[board]
@@ -93,13 +88,44 @@ def color_num(color):
 	elif color=='b':
 		return 0
 
+#incomplete function
+def eval(data_structure,n,k):
+	if data_structure[1]=='MAX':
+		print data_structure[0]
+		#do the same thing what is in down
+	elif data_structure[1]=='MIN':
+		print data_structure[0]
+		all_diagonals,b=count_on_diag(data_structure[0],n)
+		possible_diagonals = [i for i in all_diagonals if len(i)>=k]
+		print possible_diagonals
+		# find the diagonals with only w and . (max_loss)
+		# find the diagonals with only b and . (min loss)
+		# e=max loss - min loss
+		# return e
+
+
 color = determine_color(node)
-# color = color_num(color)
-print color
 board = string_to_board(node, n)
-is_goal(board,n)
-# print board
-# fringe = []
-# Solution = solve(board, color)
+data_structure = [board,'MIN']
+eval(data_structure,n,k)
+
+'''
+this is how i think algo should be:
+minimax()
+	while fringe!=0
+	if is_goal(board):	#this function will return the data structure ie. [[board],e,MAX/MIN]
+		print MAX/MIN lost
+		return 0
+	else:
+		s=successor(board,MAX)
+		for each S:
+			calculate eval(s) and append on the board
+			if MAX:
+				choose minimum out of (e)
+				successor(board,MIN)
+			elif MIN:
+				choose maximum out of (e)
+				successor(board,MAX)
+'''
 
 
