@@ -10,6 +10,13 @@ time_limit = sys.argv[4]
 def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
 
+def board_to_string(board):
+	str=''
+	for row in board:
+		for col in row:
+			str+=col
+	return str
+
 board=string_to_board(node,n)
 print board
 
@@ -24,11 +31,14 @@ print color
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
 	return  board[0:row] + [board[row][0:col] + [color,] + board[row][col+1:]] + board[row+1:]
-    # return board[0:row] + [board[row][0:col] + [color, ] + board[row][col + 1:]] + board[row + 1:]
+	# return board[0:row] + [board[row][0:col] + [color, ] + board[row][col + 1:]] + board[row + 1:]
 
 
 def successors(board):
+	color=determine_color(board_to_string(board))
 	return [add_marble(board, row, col, color) for row in range(0,n) for col in range(0,n) if board[row][col]=='.' ]
+
+# print successors([['w', 'w', '.'], ['b', '.', 'b'], ['b', 'w', 'w']])
 
 def count_on_row(board):
 	return [[(i,len(list(g))) for i,g in groupby(row)] for row in board]
@@ -37,7 +47,6 @@ def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
 def generate_diag(board,n):
-	print "board",board
 	diagonals1=[]
 	diagonals2=[]
 	for row in range(0,n):
@@ -65,87 +74,91 @@ def count_on_diag(d= generate_diag(board, n)):
 	return [[(i,len(list(g))) for i,g in groupby(row)] for row in d]
 
 def is_terminal(board, k, color):
+	#check if there's no space on the board
+	if len([col for row in board for col in row if col == '.'])==0:
+		print "terminal state"
+		return True
 
-    #check if there's no space on the board
-    if len([col for row in board for col in row if col == '.'])==0:
-        print "terminal state"
-        return True
+	#check if there's a line in the column
+	result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
+	if result:
+		print c[0], "lost"
+		return True
+	result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
+	if result:
+		print result, "row"
+		return True
 
-    #check if there's a line in the column
-    result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
-    print result, "resu"
-    if result:
-        print c[0], "lost"
-        # return (True, c[0])
-        return True
-    # check if there's a line in a row
-    result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
-    if result:
-        print result, "row"
-        # return (True, c[0])
-        return True
+	#check if there's a line in the diagonal
+	result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] == color]
+	if result:
+		print result, "di"
+		return True
+	return False
 
-    #check if there's a line in the diagonal
-    result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] == color]
-    if result:
-        print result, "di"
-        # return (True, c[0])
-        return True
-    return False
+# print is_terminal([['w', 'w', 'b'], ['b', 'w', 'b'], ['b', 'w', 'w']],k,color)
 
 def utility(board,color):
     #check if color wins/looses in row
     result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
     if result:
-        return 1
+        return -1
     result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] != color]
     if result:
-        return -1
+        return 1
 
     #check if color wins/looses in col
     result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
     if result:
-        return 1
+        return -1
     result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] != color]
     if result:
-        return -1
+        return 1
 
     #check if color wins/looses in diagonal
     result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] == color]
     if result:
-        return 1
+        return -1
     result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] != color]
     if result:
-        return -1
+        return 1
 
     #check for a draw
     if len([col for row in board for col in row if col == '.'])==0:
         return 0
 
-def min(board):
-    if is_terminal(board,k,color):
-        print "min ended"
-        return -1
-    else:
-        # return util(board)
-        # min([max(s) for s in successors(board)])
-        print [max(s) for s in successors(board)]
+# print utility([['b', 'b', 'b'], ['w', '.', 'w'], ['w', '.', '.']],'w')
 
-def max(board):
-    if is_terminal(board,k,color):
-        print "max ended"
-        return 1
-    else:
-        # return util(board)
-        # max([min(s) for s in successors(board)])
-        print [min(s) for s in successors(board)]
+def min_player(board,k,color):
+	print "this board entered min ", board
+	if is_terminal(board,k,color):
+		utility_val=utility(board,color)
+		print "utility_val is ",utility_val
+		return utility_val
+	else:
+		min_array=[max_player(s,k,color) for s in successors(board)]
+		print "min array is ",min_array
+		return min(min_array)
 
-successor_array=[]
+def max_player(board,k,color):
+	print "this board entered max ",board
+	if is_terminal(board,k,color):
+		utility_val = utility(board, color)
+		print "utility_val is ",utility_val
+		return utility_val
+	else:
+		max_array=[min_player(s,k,color) for s in successors(board)]
+		print "max array is ",max_array
+		return max(max_array)
+
 utility_value=-9999
 resultant_board=[]
 for s in successors(board):
-    uv=max(board)
-    if uv<utility_value:
-        utility_value=uv
-        resultant_board=s
+	print "s is ",s
+	uv=max_player(s,k,color)
+	print "uv is ",uv
+	if uv>utility_value:
+		utility_value=uv
+		print "utility value changed to",utility_value
+		resultant_board=s
 print resultant_board
