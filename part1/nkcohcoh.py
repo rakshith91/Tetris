@@ -47,6 +47,7 @@ def count_on_col(board):
 	return [[(i,len(list(g))) for i,g in groupby(col)] for col in zip(*board)]
 
 def generate_diag(board,n):
+	# print "board",board
 	diagonals1=[]
 	diagonals2=[]
 	for row in range(0,n):
@@ -67,36 +68,37 @@ def generate_diag(board,n):
 				diagonals2.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if r >= 0 and r < n])
 				# print "backward diagonals / " , diagonals2
 	d = diagonals1 + diagonals2
+	# print d
 	return d
 
-def count_on_diag(d= generate_diag(board, n)):
-	d= [i for i in d if len(i)>=k]
-	return [[(i,len(list(g))) for i,g in groupby(row)] for row in d]
+# def count_on_diag(d= generate_diag(board, n)):
+def count_on_diag(diagonals):
+	d= [i for i in diagonals if len(i)>=k]
+	return [[(i,len(list(g))) for i,g in groupby(row)] for row in diagonals]
 
+# print count_on_diag(generate_diag([['w', 'b', 'w', 'b'], ['b', '.', 'w', 'b'], ['w', 'b', 'b', '.'], ['w', 'w', 'b', 'w']],n))
+
+# print k
 def is_terminal(board, k, color):
 	#check if there's no space on the board
 	if len([col for row in board for col in row if col == '.'])==0:
-		print "terminal state"
 		return True
 
 	#check if there's a line in the column
 	result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
 	if result:
-		print c[0], "lost"
 		return True
 	result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
 	if result:
-		print result, "row"
 		return True
 
 	#check if there's a line in the diagonal
-	result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] == color]
+	result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] == color]
 	if result:
-		print result, "di"
 		return True
 	return False
 
-# print is_terminal([['w', 'w', 'b'], ['b', 'w', 'b'], ['b', 'w', 'w']],k,color)
+# print is_terminal([['w', 'b', 'w', 'b'], ['b', '.', 'w', 'b'], ['w', 'b', 'b', '.'], ['w', 'w', 'b', 'w']],k,color)
 
 def utility(board,color):
     #check if color wins/looses in row
@@ -116,10 +118,10 @@ def utility(board,color):
         return 1
 
     #check if color wins/looses in diagonal
-    result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] == color]
+    result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] == color]
     if result:
         return -1
-    result = [c for r in count_on_diag() for c in r if c[1] == k and c[0] != color]
+    result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] != color]
     if result:
         return 1
 
@@ -151,14 +153,47 @@ def max_player(board,k,color):
 		print "max array is ",max_array
 		return max(max_array)
 
+
+# main function
 utility_value=-9999
 resultant_board=[]
-for s in successors(board):
-	print "s is ",s
-	uv=max_player(s,k,color)
-	print "uv is ",uv
-	if uv>utility_value:
-		utility_value=uv
-		print "utility value changed to",utility_value
-		resultant_board=s
-print resultant_board
+if is_terminal(board,k,color):
+	util=utility(board,color)
+	if util==1:
+		print color," has already won the game"
+	elif util==-1:
+		print color," has already lost the game"
+	elif util==0:
+		print "the game is already a draw"
+	else:
+		print "errored input"
+else:
+	for s in successors(board):
+		print "s is ",s
+		if is_terminal(s, k, color):
+			util = utility(s, color)
+			if util == 1:
+				utility_value=util
+				# print color, " won the game"
+			elif util == -1:
+				utility_value=util
+				# print color, " lost the game"
+			elif util==0:
+				utility_value=util
+				# print "game is draw"
+		else:
+			uv=max_player(s,k,color)
+			print "uv is ",uv
+			if uv>utility_value:
+				utility_value=uv
+				print "utility value changed to",utility_value
+				resultant_board=s
+			print resultant_board
+	if utility_value==0:
+		print "There is no possible moves left match is draw"
+	elif utility_value==1:
+		print "There is no possible moves left ",color," won the game"
+	elif utility_value==-1:
+		print "There is no possible moves left ",color," lost the game"
+	else:
+		print "error"
