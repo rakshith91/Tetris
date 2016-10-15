@@ -6,12 +6,21 @@ n = int(sys.argv[1])
 k = int(sys.argv[2])
 node = sys.argv[3]
 time_limit = sys.argv[4]
+
 #determine which color takes the move. argument node is a string input from sys(refer line 4)
 def determine_color(node):
 	whites = node.count('w')
 	blacks = node.count('b')
 	return 'w' if whites==blacks else 'b' if whites>blacks else "error"
 color = determine_color(node)
+
+#define max and min
+max=color
+if max=='b':
+	min='w'
+else:
+	min='b'
+
 #converts the string input to a board (list of list) given n(line 2)
 def string_to_board(node, n):
 	return [list(node[i:i+n]) for i in range(0, len(node), n)]
@@ -24,7 +33,7 @@ def count_on_col(board):
 
 board = string_to_board(node, n)
 	
-# David Crandal's nqueens code
+# https://d1b10bmlvqabco.cloudfront.net/attach/irnmu9v26th48r/irnn3xcxmhl79t/it989yrs3ja8/nqueens.py
 def generate_diag(board,n):
 	print "board",board
 	diagonals1=[]
@@ -52,7 +61,9 @@ def generate_diag(board,n):
 def count_on_diag(d= generate_diag(board, n)):
 	d= [i for i in d if len(i)>=k]
 	return [[(i,len(list(g))) for i,g in groupby(row)] for row in d]
+
 print count_on_diag()
+
 #idea for this function taken from assignment 0
 def add_marble(board, row, col, color):
 	return  board[0:row] + [board[row][0:col] + [color,] + board[row][col+1:]] + board[row+1:]
@@ -64,33 +75,25 @@ def successors(board):
 
 
 
-def is_goal(board,k):
-	#loss by column
-	result= [c for r in count_on_col(board) for c in r if c[1]==k and c[0]!='.']
+def is_goal(board,k,color):
+	result= [c for r in count_on_col(board) for c in r if c[1]==k and c[0]==color]
 	print result,"resu"
 	if result:
 		print c[0],"lost"
 		return (True, c[0])
-	result= [c for r in count_on_row(board) for c in r if c[1]==k and c[0]!='.']
+	result= [c for r in count_on_row(board) for c in r if c[1]==k and c[0]==color]
 	if result:
 		print result,"row"
 		return (True, c[0])
 	
-	result = [c for r in count_on_diag() for c in r if c[1]==k and c[0]!='.']
+	result = [c for r in count_on_diag() for c in r if c[1]==k and c[0]==color]
 	if result:
 		print result,"di"
 		return (True, c[0])
 	return False
 
+is_goal(board,k,max,min)
 
-def solve(board,color):
-	fringe=[board]
-	while fringe:
-		for s in successors(fringe.pop()):
-			if is_goal(s,k):
-				return s
-			fringe.append(s)
-	return False
 
 print solve(board, determine_color(node))
 def color_num(color):
@@ -152,4 +155,17 @@ def heuristic(data_structure,n,k):
 		# # e=max loss - min loss
 		print e
 
+def solve(board,color):
+	fringe=[board]
+	while fringe:
+		for s in successors(fringe.pop()):
+			if is_goal(s,k):
+				return s
+			fringe.append(s)
+	return False
 
+def minimax_decision(board):
+	if is_goal(board,k):
+		print "eureka jeet gae"
+	else:
+		s=successors(board)
