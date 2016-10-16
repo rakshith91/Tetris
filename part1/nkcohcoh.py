@@ -1,5 +1,6 @@
 import sys
 from itertools import groupby
+global horizon,count,color,utility_value,n,k
 
 n = int(sys.argv[1])
 k = int(sys.argv[2])
@@ -98,58 +99,98 @@ def is_terminal(board, k, color):
 		return True
 	return False
 
-# print is_terminal([['w', 'b', 'w', 'b'], ['b', '.', 'w', 'b'], ['w', 'b', 'b', '.'], ['w', 'w', 'b', 'w']],k,color)
+# print is_terminal([['.', 'w', '.'], ['.', '.', '.'], ['w', '.', 'b']],k,color)
+
+def heur(board,color):
+	white_list=0
+	black_list=0
+	for row in board:
+		x= [row[i:i+k] for i in range(0,n-k+1)]
+		for i in x:
+			if 'b' not in i:
+				white_list+=1
+			if 'w' not in i:
+				black_list+=1
+		# print "for row",white_list,black_list
+	for col in zip(*board):
+		x= [col[i:i+k] for i in range(0,n-k+1)]
+		for i in x:
+			if 'b' not in i:
+				white_list+=1
+			if 'w' not in i:
+				black_list+=1
+		# print "for row",white_list,black_list
+	for element in generate_diag(board,n):
+		# print element,"el"
+		x = filter(None, [element[i:i + k] if len(element[i:i+k])>=k else None for i in range(0, n - k + 1) ])
+		# print x,"x"
+		for i in x:
+			if 'b' not in i:
+				white_list += 1
+			if 'w' not in i:
+				black_list += 1
+		# print "for row",white_list,black_list
+	# print black_list,white_list
+	return black_list-white_list if color=='b' else white_list-black_list
+
+# print heur([['w', 'w', '.'], ['.', '.', '.'], ['.', '.', 'b']],color)
 
 def utility(board,color):
-    #check if color wins/looses in row
-    result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
-    if result:
-        return -1
-    result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] != color]
-    if result:
-        return 1
+	#check if color wins/looses in row
+	result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] == color]
+	if result:
+		return -1
+	result = [c for r in count_on_row(board) for c in r if c[1] == k and c[0] != color]
+	if result:
+		return 1
 
-    #check if color wins/looses in col
-    result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
-    if result:
-        return -1
-    result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] != color]
-    if result:
-        return 1
+	#check if color wins/looses in col
+	result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] == color]
+	if result:
+		return -1
+	result = [c for r in count_on_col(board) for c in r if c[1] == k and c[0] != color]
+	if result:
+		return 1
 
-    #check if color wins/looses in diagonal
-    result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] == color]
-    if result:
-        return -1
-    result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] != color]
-    if result:
-        return 1
+	#check if color wins/looses in diagonal
+	result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] == color]
+	if result:
+		return -1
+	result = [c for r in count_on_diag(generate_diag(board,n)) for c in r if c[1] == k and c[0] != color]
+	if result:
+		return 1
 
-    #check for a draw
-    if len([col for row in board for col in row if col == '.'])==0:
-        return 0
+	#check for a draw
+	if len([col for row in board for col in row if col == '.'])==0:
+		return 0
 
 # print utility([['b', 'b', 'b'], ['w', '.', 'w'], ['w', '.', '.']],'w')
 
-def min_player(board,k,color):
+def min_player(board,k,color,count,horizon):
 	print "this board entered min ", board
-	if is_terminal(board,k,color):
-		utility_val=utility(board,color)
+	if is_terminal(board,k,color) or count==horizon:
+		utility_val=heur(board, determine_color(board_to_string(board)))
 		print "utility_val is ",utility_val
 		return utility_val
 	else:
-		min_array=[max_player(s,k,color) for s in successors(board)]
+		print "this board entered min ", board
+		count+=1
+		print "count is ",count
+		min_array=[max_player(s,k,color,count,horizon) for s in successors(board)]
 		print "min array is ",min_array
 		return min(min_array)
 
-def max_player(board,k,color):
+def max_player(board,k,color,count,horizon):
 	print "this board entered max ",board
-	if is_terminal(board,k,color):
-		utility_val = utility(board, color)
+	if is_terminal(board,k,color) or count==horizon:
+		utility_val = heur(board, determine_color(board_to_string(board)))
 		print "utility_val is ",utility_val
 		return utility_val
 	else:
-		max_array=[min_player(s,k,color) for s in successors(board)]
+		print "this board entered max ", board
+		count += 1
+		print "count is ",count
+		max_array=[min_player(s,k,color,count,horizon) for s in successors(board)]
 		print "max array is ",max_array
 		return max(max_array)
 
@@ -157,43 +198,39 @@ def max_player(board,k,color):
 # main function
 utility_value=-9999
 resultant_board=[]
-if is_terminal(board,k,color):
-	util=utility(board,color)
-	if util==1:
-		print color," has already won the game"
-	elif util==-1:
-		print color," has already lost the game"
-	elif util==0:
-		print "the game is already a draw"
-	else:
-		print "errored input"
-else:
-	for s in successors(board):
-		print "s is ",s
-		if is_terminal(s, k, color):
-			util = utility(s, color)
-			if util == 1:
-				utility_value=util
-				# print color, " won the game"
-			elif util == -1:
-				utility_value=util
-				# print color, " lost the game"
-			elif util==0:
-				utility_value=util
-				# print "game is draw"
+count=0
+for horizon in range(1,(n**2)+1):
+	
+	count=0
+	utility_value = -9999
+
+	print "###############################"
+	print "horizon is ",horizon
+	print "###############################"
+	if is_terminal(board,k,color) or horizon==count:
+		util=utility(board,color)
+		if util==1:
+			print color," has already won the game"
+		elif util==-1:
+			print color," has already lost the game"
+		elif util==0:
+			print "the game is already a draw"
 		else:
-			uv=max_player(s,k,color)
-			print "uv is ",uv
-			if uv>utility_value:
-				utility_value=uv
-				print "utility value changed to",utility_value
-				resultant_board=s
-			print resultant_board
-	if utility_value==0:
-		print "There is no possible moves left match is draw"
-	elif utility_value==1:
-		print "There is no possible moves left ",color," won the game"
-	elif utility_value==-1:
-		print "There is no possible moves left ",color," lost the game"
+			print "errored input"
 	else:
-		print "error"
+		utility_value = -9999
+		count+=1
+		for s in successors(board):
+			print "s is ",s
+			if is_terminal(s, k, color) or horizon==count:
+				uv = heur(s, determine_color(board_to_string(s)))
+				print "heuristic value is ",uv
+			else:
+				uv=min_player(s,k,color,count,horizon)
+
+			if uv > utility_value:
+				utility_value = uv
+				print "utility value changed to", utility_value
+				resultant_board = s
+	print "best choice at this moment is ", resultant_board
+	print count
