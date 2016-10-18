@@ -14,6 +14,9 @@
 #The time limit is checked while searching the entire tree. The time limit is adjusted to accomodate the pre-calculations.
 #The resultant board showing the next best move is then converted to string and displayed to the user
 
+#Problems Faced :
+#The only problem we faced was coming up with a good heuristic function.
+
 import sys
 from itertools import groupby
 import time
@@ -71,34 +74,30 @@ def count_on_row(board):
 def count_on_col(board):
     return [[(i, len(list(g))) for i, g in groupby(col)] for col in zip(*board)]
 
-
+#the idea of this function is taken from the nqueens code written by Prof. David Crandall
 def generate_diag(board, n):
-    # print "board",board
     diagonals1 = []
     diagonals2 = []
     for row in range(0, n):
         for col in range(0, n):
             if row != 0 and col == 0:
+                # prints forward diagonals \ diagonals
                 dir = 1
                 diagonals1.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if
                                    r >= 0 and r < n])
-            # print "forward diagonals \ ",diagonals1
             if row == 0:
                 dir = 1
                 diagonals1.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if
                                    r >= 0 and r < n])
-                # print "forward diagonals \ "
+                # prints backward diagonals / diagonals
                 dir = -1
                 diagonals2.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if
                                    r >= 0 and r < n])
-            # print "backward diagonals / ",diagonals2
             elif row != 0 and col == n - 1:
                 dir = -1
                 diagonals2.append([board[r][c] for (r, c) in [(row - col * dir + c * dir, c) for c in range(0, n)] if
                                    r >= 0 and r < n])
-                # print "backward diagonals / " , diagonals2
     d = diagonals1 + diagonals2
-    # print d
     return d
 
 
@@ -106,9 +105,6 @@ def generate_diag(board, n):
 def count_on_diag(diagonals):
     d = [i for i in diagonals if len(i) >= k]
     return [[(i, len(list(g))) for i, g in groupby(row)] for row in diagonals]
-
-
-# print count_on_diag(generate_diag([['w', 'b', 'w', 'b'], ['b', '.', 'w', 'b'], ['w', 'b', 'b', '.'], ['w', 'w', 'b', 'w']],n))
 
 #Check if it's a terminal state if any of the players lose or if there is no place left to insert a marble
 def is_terminal(board, k, color):
@@ -131,11 +127,11 @@ def is_terminal(board, k, color):
     return False
 
 
-# print is_terminal([['.', 'w', '.'], ['.', '.', '.'], ['w', '.', 'b']],k,color)
 # Heuristic which decides the min-max value of current state when cut-off condition turns True
 # The heuristics check for number of consecutive blacks/white pebbles in row, column and diagonals.
 # The heuristic function subtracts the summation of the rows, columns and diagonals of the min player and the max player
 # It returns the between those counts based on the turn of current player.
+
 def heur(board, color):
     white_list = 0
     black_list = 0
@@ -146,7 +142,6 @@ def heur(board, color):
                 white_list += 1
             if 'w' not in i:
                 black_list += 1
-                # print "for row",white_list,black_list
     for col in zip(*board):
         x = [col[i:i + k] for i in range(0, n - k + 1)]
         for i in x:
@@ -154,22 +149,16 @@ def heur(board, color):
                 white_list += 1
             if 'w' not in i:
                 black_list += 1
-                # print "for row",white_list,black_list
     for element in generate_diag(board, n):
-        # print element,"el"
         x = filter(None, [element[i:i + k] if len(element[i:i + k]) >= k else None for i in range(0, n - k + 1)])
-        # print x,"x"
         for i in x:
             if 'b' not in i:
                 white_list += 1
             if 'w' not in i:
                 black_list += 1
-                # print "for row",white_list,black_list
-    # print black_list,white_list
     return black_list - white_list if color == 'b' else white_list - black_list
 
 
-# print heur([['w', 'w', '.'], ['.', '.', '.'], ['.', '.', 'b']],color)
 # Utility function to determine the min-max value of the given state
 def utility(board, color):
     # check if color wins/looses in row
@@ -201,7 +190,6 @@ def utility(board, color):
         return 0
 
 
-# print utility([['b', 'b', 'b'], ['w', '.', 'w'], ['w', '.', '.']],'w')
 # MIN function with alpha beta pruning
 def min_player(board, k, color, count,  alpha, beta):
     #Cut-off test
@@ -244,12 +232,12 @@ def board_to_string(board):
             str += col
     return str
 
-# main function
+# The code starts executing from below:
+
 utility_value = -9999
 resultant_board = []
 count = 0
 
-# The code starts executing from below:
 if is_terminal(board, k, color):
     util = utility(board, color)
     if util == 1:
