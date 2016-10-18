@@ -14,6 +14,8 @@
 #The time limit is checked while searching the entire tree. The time limit is adjusted to accomodate the pre-calculations.
 #The resultant board showing the next best move is then converted to string and displayed to the user
 
+#Problems Faced :
+#The only problem we faced was coming up with a good heuristic function.
 import sys
 from itertools import groupby
 import time
@@ -71,7 +73,7 @@ def count_on_row(board):
 def count_on_col(board):
     return [[(i, len(list(g))) for i, g in groupby(col)] for col in zip(*board)]
 
-
+#the idea of this function is taken from the nqueens code written by Prof. David Crandall
 def generate_diag(board, n):
     # print "board",board
     diagonals1 = []
