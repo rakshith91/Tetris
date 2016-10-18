@@ -1,3 +1,33 @@
+'''
+REPORT for part 2:
+
+Initial State: Empty board with 20 rows and 10 columns
+Valid states: A set of successors where new piece of size 4 is placed 
+Successor function: Set in which all possible rotations of the piece placed on each column after checking collision .
+Goal State: Player looses when no piece can be placed on the board(i.e. the top row of board has a (part of ) piece
+
+1) Algorithm:
+
+Generates successors for the piece and finds the best possible place using heuristic
+
+2) heuristic:
+
+Following things are considered in the heuristic:
+a)increase in height
+b)change in number of holes
+c)no of blockings added
+d)award for no of clears
+
+
+3)Problems faced:
+
+a)Designing the heuristic
+b)assigning weights to each parameters in the heuristic
+
+'''
+
+
+
 # Simple tetris program! v0.2
 # D. Crandall, Sept 2016
 from itertools import groupby
@@ -68,20 +98,6 @@ class ComputerPlayer:
 			brd = zip(*x)
 			reward_list.append((board[0].count('x')+board[-1].count('x')-current_edge, item[1]))
 		return reward_list
-
-	def get_possible_moves(self,current_col):
-		moves=[]
-		for i in range(1, current_col+1):
-			moves.append("b"*i)
-			moves.append("n"+"b"*i)
-			moves.append("nn"+"b"*i)
-			moves.append("nnn"+"b"*i)
-		for i in range(0, 10-current_col):	
-			moves.append("m"*i)
-			moves.append("n"+"m"*i)
-			moves.append("nn"+"m"*i)
-			moves.append("nnn"+"m"*i)
-		return moves
 	
 	def get_positions(self, board):
 		
@@ -95,49 +111,61 @@ class ComputerPlayer:
 			else:
 				ind_list.append((col_no,20))
 			col_no+=1
+		#print ind_list, "indlist"
 		return ind_list
 	
-	def successors(self,board,piece,piece_col, score):		
-		#brd = ['         '*20]
-		#print self.get_positions(brd),"her"
-		temp_obj= TetrisGame()
-		#piece= temp_obj.get_piece()[0]
-		temp_board=board
-		positions= self.get_positions(temp_board)
-		#print positions,"pos"
-		#positions= [[(row,col) for col in range(len(board[0])) if board[row][col]==' '] for row in range(len(board))]
-		possible_rotations=[]
-		possible_rotations.append(piece)		
-		possible_rotations.append(temp_obj.rotate_piece(piece,90))
-		possible_rotations.append(temp_obj.rotate_piece(piece,180))
-		possible_rotations.append(temp_obj.rotate_piece(piece,270))
-		successor_list=[]
-		for piece in possible_rotations: 
-			move=""
-			if possible_rotations.index(piece)==1:
-				move+="n"
-			elif possible_rotations.index(piece)==2:
-				move+="nn"
-			elif possible_rotations.index(piece)==3:
-				move+="nnn"
-			piece_height = len(piece)
-			piece_width= len(max(piece, key=len))
-			#print positions,"fds"
-			for element in positions:
-				#print element,"el"
-				if not TetrisGame.check_collision((board, score),piece,element[1]-piece_height,element[0]):	
-					if element[0]+piece_width<=10:
-						new_board = TetrisGame().place_piece((temp_board, score), piece,element[1]-piece_height ,element[0])
-						if element[0]<piece_col:
-							successor_list.append((new_board[0], move+"b"*(piece_col-element[0])))
-						elif element[0]>piece_col:
-							successor_list.append((new_board[0], move+"m"*(element[0]-piece_col)))
-						elif element[0]==piece_col:
-							successor_list.append((new_board[0], move))
-						#print "newboard", new_board
-		return successor_list
+	def successors(self,board,piece,piece_col, score):	
+		try:	
+			#brd = ['         '*20]
+			#print self.get_positions(brd),"her"
+			temp_obj= TetrisGame()
+			#piece= temp_obj.get_piece()[0]
+			temp_board=board
+			positions= self.get_positions(temp_board)
+			#print positions,"pos"
+			#positions= [[(row,col) for col in range(len(board[0])) if board[row][col]==' '] for row in range(len(board))]
+			possible_rotations=[]
+			possible_rotations.append(piece)		
+			possible_rotations.append(temp_obj.rotate_piece(piece,90))
+			possible_rotations.append(temp_obj.rotate_piece(piece,180))
+			possible_rotations.append(temp_obj.rotate_piece(piece,270))
+			print possible_rotations,"pr"
+			successor_list=[]
+			for piece in possible_rotations: 
+				move=""
+				if possible_rotations.index(piece)==1:
+					move+="n"
+				elif possible_rotations.index(piece)==2:
+					move+="nn"
+				elif possible_rotations.index(piece)==3:
+					move+="nnn"
+				piece_height = len(piece)
+				piece_width= len(max(piece, key=len))
+				#print positions,"fds"
+				for element in positions:
+					#print element,"el"
+					if not TetrisGame.check_collision((board, score),piece,element[1]-piece_height,element[0]):
+						if element[0]+piece_width<=10 and element[1]-piece_height-1>=0:
+							#print element[0], element[1],element[0]+piece_width, element[1]-piece_height, "elch"
+							new_board = TetrisGame().place_piece((temp_board, score), piece,element[1]-piece_height-1 ,element[0])
+							if element[0]<piece_col:
+								successor_list.append((new_board[0], move+"b"*(piece_col-element[0])))
+							elif element[0]>piece_col:
+								successor_list.append((new_board[0], move+"m"*(element[0]-piece_col)))
+							elif element[0]==piece_col:
+								successor_list.append((new_board[0], move))				
+			#print successor_list
+			if successor_list:
+				return successor_list
+			else:
+				sys.exit(0)
+		except IndexError:
+			#eog= EndofGame()
+			raise EndOfGame("Game over!")
+			sys.exit(0)
 	
 	def calculate_penalty(self, board, piece, piece_col, score):
+		succ = self.successors(board, piece, piece_col, score)
 		base=self.base_reward(board, piece, piece_col, score) 
 		edge = self.edge_reward(board, piece, piece_col, score)
 		height= self.height_penalty(board, piece, piece_col, score)
@@ -145,11 +173,13 @@ class ComputerPlayer:
 		holes= self.calculate_holes( board, piece, piece_col, score)
 		clears= self.clears(board,piece,piece_col,score)
 		penalty_list=[]
-		for i in range(len(base)):
-			print (height[i][0], holes[i][0], block[i][0], clears[i], "heurvas")	
+		for i in range(len(succ)):
+			#print (height[i][0], holes[i][0], block[i][0], clears[i], "heurvas")	
 			#penalty_list.append((-clears[i],base[i][1]))
-			penalty_list.append((5*height[i][0]-3.5*holes[i][0]- 3.5*block[i][0],base[i][1]))
+			#if len(height) == len(succ) == len(holes)==len(block)==len(clears):
+			penalty_list.append((7*height[i][0]-7.5*holes[i][0]- 3.5*block[i][0]+ 30*clears[i],succ[i][1]))
 		sorted_list= sorted(penalty_list,key=lambda tup:tup[0])
+		#print sorted_list,"sadf"
 		return sorted_list[-1]
 		
 		
@@ -211,7 +241,7 @@ class ComputerPlayer:
 		for item in succ:
 			move= item[1]
 			hole_list.append((self.holes_count(item[0])-current_holes,item[1]))
-		print hole_list, "hl"
+		#print hole_list, "hl"
 		return hole_list
 
 	#calculates blocks for each board in successors			
@@ -239,8 +269,8 @@ class ComputerPlayer:
 		temp_board= deepcopy(brd)
 		#print brd
 		best_move=self.calculate_holes(temp_board, piece,piece_col, score) 
-		succ= self.calculate_penalty(temp_board, piece,piece_col, score)
-		#print succ, "succcc"
+		succ= self.calculate_penalty(brd, piece,piece_col, score)
+		
 		
 		return succ[1]
 	   
