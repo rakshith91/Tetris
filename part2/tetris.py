@@ -24,6 +24,9 @@ d)award for no of clears
 a)Designing the heuristic
 b)assigning weights to each parameters in the heuristic
 
+Author: Sucessor, heuristic, getmoves, and all functions related to heuristic by Sairam Rakshith bhyravabhotla
+Others: David Crandall. 
+functions from TetrisGame() object used from TetrisGame.py written by David Crandall.
 '''
 
 
@@ -129,7 +132,7 @@ class ComputerPlayer:
 			possible_rotations.append(temp_obj.rotate_piece(piece,90))
 			possible_rotations.append(temp_obj.rotate_piece(piece,180))
 			possible_rotations.append(temp_obj.rotate_piece(piece,270))
-			print possible_rotations,"pr"
+			#print possible_rotations,"pr"
 			successor_list=[]
 			for piece in possible_rotations: 
 				move=""
@@ -177,7 +180,7 @@ class ComputerPlayer:
 			#print (height[i][0], holes[i][0], block[i][0], clears[i], "heurvas")	
 			#penalty_list.append((-clears[i],base[i][1]))
 			#if len(height) == len(succ) == len(holes)==len(block)==len(clears):
-			penalty_list.append((7*height[i][0]-7.5*holes[i][0]- 3.5*block[i][0]+ 30*clears[i],succ[i][1]))
+			penalty_list.append((7.5*height[i][0]-5*holes[i][0]- 5*block[i][0]+ 30*clears[i]+2*edge[i][0]+3*base[i][0] ,succ[i][1]))
 		sorted_list= sorted(penalty_list,key=lambda tup:tup[0])
 		#print sorted_list,"sadf"
 		return sorted_list[-1]
@@ -287,7 +290,7 @@ class ComputerPlayer:
 	def control_game(self, tetris):
 		# another super simple algorithm: just move piece to the least-full column
 		while 1:
-			time.sleep(0.1)
+			#time.sleep(0.1)
 
 			
 			temp= TetrisGame()	
